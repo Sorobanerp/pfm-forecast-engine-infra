@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pfm-forecast-engine-go-netpol
+  namespace: pfm-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: pfm-forecast-engine-go
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: pfm-ingestion-bff-go
+      ports:
+        - protocol: TCP
+          port: 9091
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: pfm-valkey
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
+        - podSelector:
+            matchLabels:
+              app: pfm-kafka
+      ports:
+        - protocol: TCP
+          port: 9092

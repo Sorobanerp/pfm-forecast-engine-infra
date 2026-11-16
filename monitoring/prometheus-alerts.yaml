@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pfm-forecast-engine-go-slo-alerts
+  namespace: pfm-platform
+spec:
+  groups:
+    - name: pfm-forecast-engine-slo.rules
+      interval: 15s
+      rules:
+        - alert: PfmForecastEngineLatencyP99Exceeds25ms
+          expr: |
+            histogram_quantile(
+              0.99,
+              sum(rate(pfm_forecast_engine_duration_seconds_bucket{app="pfm-forecast-engine-go"}[5m])) by (le, operation)
+            ) > 0.025
+          for: 2m
+          labels:
+            severity: critical
+            service: pfm-forecast-engine-go
+            slo: latency-p99-25ms
+          annotations:
+            summary: "PFM Forecast Engine p99 Latency > 25ms SLO Violation"
+            description: "Operation {{ $labels.operation }} p99 latency is {{ $value }}s (SLO threshold: 0.025s / 25ms)."

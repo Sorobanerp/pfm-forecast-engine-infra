@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pfm-forecast-engine
+description: 1:1 Helm Chart for pfm-forecast-engine-go (Run-rate & SAC/Price/Consorcio Simulator)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
