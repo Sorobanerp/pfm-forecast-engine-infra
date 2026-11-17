@@ -11,6 +11,6 @@ spec:
     app: pfm-forecast-engine-go
   ports:
     - name: grpc
-      port: 9091
+      port: {{ .Values.ports.service }}
       targetPort: grpc
       protocol: TCP
