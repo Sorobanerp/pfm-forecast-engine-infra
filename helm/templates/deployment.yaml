@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pfm-forecast-engine-go
+  namespace: pfm-platform
+  labels:
+    app: pfm-forecast-engine-go
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: pfm-forecast-engine-go
+  template:
+    metadata:
+      labels:
+        app: pfm-forecast-engine-go
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      containers:
+        - name: pfm-forecast-engine-go
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - name: grpc
+              containerPort: 9091
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

@@ -1,0 +1,30 @@
+name: pfm-forecast-engine-infra-validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-iac-and-helm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.8.0
+
+      - name: OpenTofu Format Check
+        run: tofu fmt -check -recursive terraform/
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm Lint
+        run: |
+          helm lint helm -f helm/values-local.yaml
+          helm lint helm -f helm/values-prod.yaml

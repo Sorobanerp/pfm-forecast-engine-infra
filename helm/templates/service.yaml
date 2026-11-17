@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pfm-forecast-engine-go
+  namespace: pfm-platform
+  labels:
+    app: pfm-forecast-engine-go
+spec:
+  type: ClusterIP
+  selector:
+    app: pfm-forecast-engine-go
+  ports:
+    - name: grpc
+      port: 9091
+      targetPort: grpc
+      protocol: TCP

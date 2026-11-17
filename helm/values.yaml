@@ -1,0 +1,17 @@
+replicaCount: 2
+image:
+  repository: ghcr.io/dantas-pfm/pfm-forecast-engine-go
+  tag: "1.0.0"
+service:
+  grpcPort: 9091
+env:
+  REDIS_ADDR: "pfm-valkey.pfm-platform.svc.cluster.local:6379"
+  KAFKA_BROKERS: "pfm-kafka.pfm-platform.svc.cluster.local:9092"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.observability.svc.cluster.local:4318"
+resources:
+  requests:
+    cpu: "100m"
+    memory: "64Mi"
+  limits:
+    cpu: "500m"
+    memory: "128Mi"
