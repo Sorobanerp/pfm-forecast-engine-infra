@@ -1,0 +1,22 @@
+# FinOps Minimum Footprint for 5-User Family Pilot (~US$ 8/mo GCP / ~US$ 41/mo AWS)
+replicaCount: 1
+
+image:
+  repository: ghcr.io/dantas-pfm/pfm-forecast-engine-go
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  grpcPort: 9091
+
+env:
+  REDIS_ADDR: "pfm-valkey.pfm-platform.svc.cluster.local:6379"
+  KAFKA_BROKERS: "pfm-kafka.pfm-platform.svc.cluster.local:9092"
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "48Mi"
+  limits:
+    cpu: "150m"
+    memory: "96Mi"
