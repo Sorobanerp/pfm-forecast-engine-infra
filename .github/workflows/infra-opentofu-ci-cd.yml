@@ -55,8 +55,7 @@ jobs:
       - name: tofu init (backend S3 + lock DynamoDB)
         working-directory: ${{ env.TF_DIR }}
         run: |
-          printf 'terraform {\n  backend "s3" {}\n}\n' > backend_override.tf
-          tofu init -input=false \
+          tofu init -backend=false -input=false \
             -backend-config="bucket=${{ vars.TF_STATE_BUCKET_AWS }}" \
             -backend-config="dynamodb_table=${{ vars.TF_LOCK_TABLE_AWS }}" \
             -backend-config="region=${{ vars.AWS_REGION }}" \
@@ -82,8 +81,7 @@ jobs:
       - name: tofu init (backend S3 + lock DynamoDB)
         working-directory: ${{ env.TF_DIR }}
         run: |
-          printf 'terraform {\n  backend "s3" {}\n}\n' > backend_override.tf
-          tofu init -input=false \
+          tofu init -backend=false -input=false \
             -backend-config="bucket=${{ vars.TF_STATE_BUCKET_AWS }}" \
             -backend-config="dynamodb_table=${{ vars.TF_LOCK_TABLE_AWS }}" \
             -backend-config="region=${{ vars.AWS_REGION }}" \
