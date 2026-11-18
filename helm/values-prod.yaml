@@ -13,6 +13,11 @@ env:
   REDIS_ADDR: "pfm-valkey.pfm-platform.svc.cluster.local:6379"
   KAFKA_BROKERS: "pfm-kafka.pfm-platform.svc.cluster.local:9092"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://datadog-agent.monitoring.svc.cluster.local:4318"
+  OTEL_SERVICE_NAME: "pfm-forecast-engine-go"
+  DD_LOGS_INJECTION: "true"
+  DD_SERVICE: "pfm-forecast-engine-go"
+  DD_ENV: "production"
+  DD_VERSION: "0.1.0"
 resources:
   requests:
     cpu: "100m"
