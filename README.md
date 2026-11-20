@@ -1,10 +1,65 @@
-# pfm-forecast-engine-infra
+# PFM Forecast Engine Infra — IaC 1:1 (ECS Fargate Spot Arm64 / EKS)
 
-Repositório dedicado **1:1 de Infraestrutura como Código (IaC)** para o microsserviço `pfm-forecast-engine-go` (OpenTofu Multi-Cloud, Helm, NetworkPolicy e Alertas Prometheus para SLO de latência p99 `< 25ms`).
+[![Gitflow](https://img.shields.io/badge/Gitflow-develop%20%7C%20main-indigo)](CONTRIBUTING.md)
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue)](CHANGELOG.md)
+[![Docs](https://img.shields.io/badge/PFM%20Docs-V3.0-8CBA51)](https://sorobanerp.github.io/pfm-docs/)
 
 ---
 
-## Topologia de Portas: Local Host vs. Kubernetes Cloud
+## 1. Visão Geral & Papel na Arquitetura
 
-- **Host Local (`values-local.yaml`):** gRPC/HTTP `18110` (`GRPC_PORT`), Redis `16379`, Kafka `19092`.
-- **Produção K8s (`values-prod.yaml`):** gRPC `9090` (Service & Container), Redis `6379`, Kafka `9092`.
+Infraestrutura dedicada 1:1 para o `pfm-forecast-engine-go`: Task Definition **Fargate Spot Arm64**, Service Connect (`pfm-forecast-engine-go.pfm.internal:18110`), Auto Scaling (`1–3`) e Rollback Automático S3.
+
+- **Repositório:** `Sorobanerp/pfm-forecast-engine-infra`
+- **Vínculo com `pfm-docs`:** `ADR-002, ADR-008 | US-05, UC-05, UC-06`
+
+```mermaid
+flowchart LR
+    INFRA["pfm-forecast-engine-infra (OpenTofu)"] --> ECS["ECS Service (Fargate Spot Arm64)"]
+    ECS --> SC["Service Connect: pfm-forecast-engine-go.pfm.internal:18110"]
+```
+
+---
+
+## 2. Pré-requisitos & Variáveis de Ambiente
+
+### Pré-requisitos
+- OpenTofu `>= 1.8.0`
+- Trivy `>= 0.50`
+
+### Variáveis de Ambiente (Sem Segredos Hardcoded)
+| Variável | Padrão | Descrição |
+| :--- | :---: | :--- |
+| `TF_VAR_compute_engine` | `ecs_fargate_spot` | Motor de compute (`ecs_fargate_spot` ou `eks`) |
+| `TF_VAR_environment` | `prod` | Ambiente alvo |
+| `TF_STATE_BUCKET_AWS` | *(CI Secret/Var)* | Bucket S3 de state remoto OpenTofu |
+
+> **Segurança (Zero-Trust):** Nunca commite tokens, senhas, chaves AWS ou strings de conexão com credenciais reais. Utilize `.env` local (ignorado no `.gitignore`) ou AWS Secrets Manager / GitHub OIDC.
+
+---
+
+## 3. Como Executar Localmente
+
+```bash
+tofu -chdir=terraform/aws init -backend=false
+tofu -chdir=terraform/aws validate
+```
+
+---
+
+## 4. Como Testar e Validar
+
+```bash
+tofu fmt -check -recursive terraform/
+tofu -chdir=terraform/aws init -backend=false && tofu -chdir=terraform/aws validate
+trivy config --severity CRITICAL,HIGH --exit-code 1 terraform/
+```
+
+---
+
+## 5. Como Provisionar / Validar na Nuvem
+
+1. Fluxo Gitflow: `feat/*` $\rightarrow$ `develop` $\rightarrow$ `release/vX.Y.Z` $\rightarrow$ `main`.
+2. Validação pós-deploy: `aws ecs describe-services --cluster pfm-pilot-prod --services pfm-forecast-engine-go --region us-east-2`.
+
+Consulte [CONTRIBUTING.md](CONTRIBUTING.md) para regras de Conventional Commits e [CHANGELOG.md](CHANGELOG.md) para histórico de versões.
