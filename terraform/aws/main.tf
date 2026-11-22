@@ -167,8 +167,14 @@ resource "aws_iam_role_policy" "ecs_task_least_privilege" {
   })
 }
 
+variable "enable_cloudwatch_logs" {
+  description = "Disable AWS CloudWatch Logs by default (FinOps ADR-010: use Datadog JSON stdout / FireLens instead of CloudWatch)"
+  type        = bool
+  default     = false
+}
+
 resource "aws_cloudwatch_log_group" "ecs_logs" {
-  count             = var.compute_engine == "ecs_fargate_spot" ? 1 : 0
+  count             = var.compute_engine == "ecs_fargate_spot" && var.enable_cloudwatch_logs ? 1 : 0
   name              = "/ecs/pfm-forecast-engine-go-${var.environment}"
   retention_in_days = 7
 
@@ -206,16 +212,17 @@ resource "aws_ecs_task_definition" "service" {
           protocol      = "tcp"
         }
       ]
-      logConfiguration = {
+      logConfiguration = var.enable_cloudwatch_logs ? {
         logDriver = "awslogs"
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs[0].name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "forecast"
         }
-      }
+      } : null
       environment = [
         { name = "APP_ENV", value = "prod" },
+        { name = "CLOUDWATCH_LOGS_ENABLED", value = "false" },
         { name = "GRPC_PORT", value = "18110" }
       ]
     }
